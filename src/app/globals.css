@@ -1,26 +1,768 @@
 @import "tailwindcss";
 
+/* ---------- Birthday Jar Core Tokens ---------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --cream: #FFF7D1;
+  --yellow: #FFE44D;
+  --pink: #FFD1DC;
+  --accent: #FF5FA2;
+  --ink: #2B2A33;
+  --hand: var(--font-caveat), "Caveat", "Segoe Print", "Bradley Hand", cursive;
+  --ui: var(--font-dm-sans), "DM Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --spring: cubic-bezier(.34, 1.56, .64, 1);
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html {
+  scroll-padding-top: env(safe-area-inset-top, 0px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--cream);
+  background-image: radial-gradient(rgba(43, 42, 51, 0.1) 1px, transparent 1.6px);
+  background-size: 22px 22px;
+  color: var(--ink);
+  font-family: var(--ui);
+  overflow: hidden;
 }
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---------- Layout ---------- */
+.app {
+  height: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 10px 18px 14px;
+  display: flex;
+  flex-direction: column;
+}
+
+.top {
+  flex: none;
+  height: 150px;
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.jar-zone {
+  flex: none;
+  position: relative;
+  height: 232px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity .6s, transform .7s var(--spring), height .5s;
+}
+
+.jar-zone::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  width: 230px;
+  height: 230px;
+  border-radius: 50%;
+  background: var(--pink);
+  opacity: .55;
+  transition: transform .5s;
+}
+
+.jar-on .jar-zone {
+  opacity: 1;
+  transform: none;
+}
+
+.compact .jar-zone {
+  height: 166px;
+}
+
+.compact .jar-zone::before {
+  transform: scale(.72);
+  transform-origin: bottom;
+}
+
+.panel {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 6px 8px;
+  overflow-y: auto;
+}
+
+/* ---------- Character ---------- */
+.char {
+  width: 112px;
+  flex: none;
+  transform: translateX(-200%);
+  transition: transform 1.7s cubic-bezier(.35, .1, .65, .9);
+}
+
+.char.in {
+  transform: none;
+}
+
+.char-svg,
+.char-img {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.char-svg * {
+  transform-box: fill-box;
+}
+
+.skin,
+.arm rect {
+  fill: #FFE2C6;
+  stroke: var(--ink);
+  stroke-width: 2.5;
+}
+
+.hair {
+  fill: var(--ink);
+}
+
+.dress {
+  fill: var(--accent);
+  stroke: var(--ink);
+  stroke-width: 2.5;
+}
+
+.leg rect {
+  fill: var(--ink);
+}
+
+.eye {
+  fill: var(--ink);
+}
+
+.cheek {
+  fill: var(--accent);
+  opacity: .45;
+}
+
+.mouth {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.arm {
+  transform-origin: 50% 8%;
+}
+
+.leg {
+  transform-origin: 50% 0;
+}
+
+.think {
+  opacity: 0;
+}
+
+.think circle {
+  fill: var(--ink);
+}
+
+.char-body {
+  transform-origin: 50% 100%;
+}
+
+[data-state=idle] .char-body {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+[data-state=walking] .char-body {
+  animation: bob .5s ease-in-out infinite;
+}
+
+[data-state=walking] .leg.l {
+  animation: step .5s ease-in-out infinite;
+}
+
+[data-state=walking] .leg.r {
+  animation: step .5s ease-in-out infinite reverse;
+}
+
+[data-state=greeting] .arm.r {
+  animation: wave .6s ease-in-out infinite;
+}
+
+[data-state=greeting] .char-body {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+[data-state=thinking] .char-body {
+  transform: rotate(-4deg);
+}
+
+[data-state=thinking] .think {
+  animation: blink 1.4s steps(1) infinite;
+}
+
+[data-state=writing] .char-body {
+  transform: rotate(3deg);
+}
+
+[data-state=writing] .arm.r {
+  animation: scribble .35s ease-in-out infinite;
+}
+
+[data-state=celebrating] .arm.l {
+  transform: rotate(160deg);
+}
+
+[data-state=celebrating] .arm.r {
+  transform: rotate(-160deg);
+}
+
+[data-state=celebrating] .char-body {
+  animation: hop 1.1s var(--spring) infinite;
+}
+
+@keyframes bob {
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes step {
+  0%, 100% { transform: rotate(18deg); }
+  50% { transform: rotate(-18deg); }
+}
+
+@keyframes breathe {
+  50% { transform: scale(1.02, .985); }
+}
+
+@keyframes wave {
+  0%, 100% { transform: rotate(-135deg); }
+  50% { transform: rotate(-165deg); }
+}
+
+@keyframes scribble {
+  0%, 100% { transform: rotate(-34deg); }
+  50% { transform: rotate(-24deg); }
+}
+
+@keyframes hop {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-9px); }
+}
+
+@keyframes blink {
+  0% { opacity: 0; }
+  33% { opacity: .4; }
+  66% { opacity: 1; }
+}
+
+/* ---------- Speech Bubble ---------- */
+.bubble {
+  position: relative;
+  margin-bottom: 76px;
+  max-width: calc(100% - 130px);
+  background: #fff;
+  border: 2px solid var(--ink);
+  border-radius: 18px 18px 18px 4px;
+  padding: 8px 14px 10px;
+  font: 700 26px/1.1 var(--hand);
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: 0 100%;
+}
+
+.bubble::after {
+  content: "";
+  position: absolute;
+  left: -8px;
+  bottom: 12px;
+  width: 13px;
+  height: 13px;
+  background: #fff;
+  border-left: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+  transform: rotate(45deg);
+}
+
+.bubble.show {
+  opacity: 1;
+  animation: pop .45s var(--spring);
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(.7) rotate(-3deg);
+  }
+}
+
+/* ---------- Birthday Jar ---------- */
+.jar {
+  position: relative;
+  width: 176px;
+  height: 214px;
+  isolation: isolate;
+  transition: transform .5s var(--spring);
+  transform-origin: 50% 100%;
+}
+
+.compact .jar {
+  transform: scale(.74);
+}
+
+.jar-inner {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 100%;
+}
+
+.jar-inner.wobble {
+  animation: wobble .7s ease-out;
+}
+
+@keyframes wobble {
+  0% { transform: scale(1, 1); }
+  20% { transform: rotate(-3deg) scale(1.03, .95); }
+  45% { transform: rotate(2.2deg) scale(.99, 1.03); }
+  70% { transform: rotate(-1deg); }
+  100% { transform: none; }
+}
+
+.lid {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: 4px;
+  width: 118px;
+  height: 18px;
+  margin-left: -59px;
+  background: var(--accent);
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  transition: transform .8s var(--spring);
+}
+
+.jar.open .lid {
+  transform: translate(58px, -12px) rotate(17deg);
+}
+
+.neck {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 18px;
+  width: 120px;
+  height: 24px;
+  margin-left: -60px;
+  background: rgba(255, 255, 255, .5);
+  border: 2px solid var(--ink);
+  border-bottom: 0;
+}
+
+.jar-body {
+  position: absolute;
+  z-index: 1;
+  left: 0;
+  right: 0;
+  top: 40px;
+  bottom: 0;
+  background: rgba(255, 255, 255, .45);
+  border: 2px solid var(--ink);
+  border-radius: 26px 26px 36px 36px;
+  overflow: hidden;
+}
+
+.jar-notes {
+  position: absolute;
+  inset: 0;
+}
+
+.shine {
+  position: absolute;
+  left: 12px;
+  top: 14px;
+  width: 9px;
+  height: 62%;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .75);
+}
+
+.label {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%) rotate(-3deg);
+  white-space: nowrap;
+  background: var(--cream);
+  border: 2px solid var(--ink);
+  padding: 0 12px;
+  font: 700 21px/1.3 var(--hand);
+}
+
+.jar-note {
+  position: absolute;
+  left: calc(var(--x) * 1%);
+  bottom: calc(var(--y) * 1px);
+  width: calc(var(--w) * 1px);
+  height: calc(var(--h) * 1px);
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  transform: rotate(calc(var(--r) * 1deg));
+  animation: drop .6s var(--spring) both;
+  box-shadow: inset -7px 0 0 rgba(43, 42, 51, .1);
+}
+
+.jar-note::after {
+  content: "";
+  position: absolute;
+  left: 44%;
+  right: 44%;
+  top: -1.5px;
+  bottom: -1.5px;
+  background: var(--accent);
+  border-left: 1.5px solid var(--ink);
+  border-right: 1.5px solid var(--ink);
+}
+
+@keyframes drop {
+  from {
+    opacity: 0;
+    transform: translateY(-120px) rotate(calc(var(--r) * 1deg + 70deg));
+  }
+}
+
+.jar.done::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 34px -26px -4px;
+  border-radius: 50%;
+  background: var(--yellow);
+  opacity: .75;
+  animation: pop .8s var(--spring);
+}
+
+/* ---------- Paper Notes & Palette ---------- */
+.c-yellow { background: var(--yellow); }
+.c-pink { background: var(--pink); }
+.c-cream { background: var(--cream); }
+.c-accent { background: var(--accent); }
+
+.note {
+  position: relative;
+  flex: none;
+  width: 100%;
+  max-width: 440px;
+  padding: 24px 20px 14px;
+  border: 2px solid var(--ink);
+  border-radius: 6px 6px 12px 6px;
+  box-shadow: 4px 4px 0 var(--ink);
+  transform: rotate(-1.2deg);
+  animation: notePop .65s var(--spring) both;
+}
+
+@keyframes notePop {
+  from {
+    opacity: 0;
+    transform: translateY(50px) rotate(6deg) scale(.9);
+  }
+}
+
+.tape {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  width: 78px;
+  height: 22px;
+  margin-left: -39px;
+  background: rgba(255, 255, 255, .65);
+  border: 1.5px solid rgba(43, 42, 51, .3);
+  transform: rotate(3deg);
+}
+
+.note-prompt {
+  margin: 0 0 10px;
+  font: 700 27px/1.1 var(--hand);
+}
+
+.note textarea {
+  display: block;
+  width: 100%;
+  height: 128px;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  resize: none;
+  background: repeating-linear-gradient(transparent 0 31px, rgba(43, 42, 51, .25) 31px 32px) local;
+  font: 500 24px/32px var(--hand);
+}
+
+.note.short textarea {
+  height: 96px;
+}
+
+.note textarea::placeholder,
+.extras input::placeholder {
+  color: rgba(43, 42, 51, .5);
+}
+
+.extras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.extras input[type=text] {
+  flex: 1;
+  min-width: 130px;
+  padding: 2px 0;
+  border: 0;
+  border-bottom: 2px solid var(--ink);
+  background: transparent;
+  outline: 0;
+  font: 500 21px var(--hand);
+}
+
+.extras input:disabled {
+  opacity: .4;
+}
+
+.extras label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 14px;
+}
+
+.extras input[type=checkbox] {
+  accent-color: var(--ink);
+  width: 18px;
+  height: 18px;
+}
+
+.flier {
+  position: fixed;
+  z-index: 60;
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  pointer-events: none;
+  overflow: hidden;
+  padding: 24px 20px;
+  font: 700 27px/1.1 var(--hand);
+}
+
+/* ---------- Buttons & Typography ---------- */
+.cta {
+  flex: none;
+  cursor: pointer;
+  padding: 12px 24px;
+  background: var(--yellow);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  font: 700 17px var(--ui);
+  box-shadow: 3px 3px 0 var(--ink);
+  transition: transform .15s, box-shadow .15s, opacity .2s;
+}
+
+.cta:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.cta:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+.cta:disabled {
+  opacity: .4;
+  cursor: default;
+}
+
+.cta.gone {
+  visibility: hidden;
+}
+
+.late,
+.line,
+.card-line {
+  animation: fadeUp .6s both;
+  animation-delay: calc(var(--i, 0) * var(--step, .9s));
+}
+
+.card-line {
+  --step: 1.1s;
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.lines {
+  text-align: center;
+  max-width: 380px;
+}
+
+.line {
+  margin: 0 0 6px;
+  font: 700 32px/1.1 var(--hand);
+}
+
+.lines .sub {
+  font: 400 15px/1.4 var(--ui);
+  margin-top: 14px;
+  opacity: .75;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  padding: 26px 24px 16px;
+  background: var(--pink);
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  box-shadow: 4px 4px 0 var(--ink);
+  transform: rotate(.8deg);
+}
+
+.card-line {
+  margin: 0 0 8px;
+  font: 500 27px/1.15 var(--hand);
+}
+
+.card-line.em {
+  font-weight: 700;
+  font-size: 31px;
+}
+
+.mark {
+  background: linear-gradient(transparent 52%, var(--yellow) 52%);
+}
+
+.thanks {
+  margin: 0;
+  font: 700 40px/1 var(--hand);
+  text-align: center;
+  animation: fadeUp .7s both;
+}
+
+.see {
+  margin: -6px 0 0;
+  font: 500 28px var(--hand);
+  animation: fadeUp .7s .5s both;
+}
+
+.polaroid {
+  flex: none;
+  width: 156px;
+  padding: 10px 10px 30px;
+  background: #fff;
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: rotate(-3deg);
+  animation: fadeUp .7s 1s both;
+}
+
+.photo {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  background: var(--pink);
+  border: 2px dashed var(--ink);
+  font: 500 22px var(--hand);
+}
+
+.again {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 14px;
+  opacity: .6;
+  animation: fadeUp .7s 1.6s both;
+}
+
+/* ---------- Responsive & Motion Accessibility ---------- */
+@media (min-width: 900px) and (min-height: 780px) {
+  .app {
+    max-width: 640px;
+  }
+  .char {
+    width: 132px;
+  }
+  .top {
+    height: 176px;
+  }
+  .bubble {
+    margin-bottom: 92px;
+    font-size: 30px;
+  }
+  .jar-zone {
+    height: 290px;
+  }
+  .jar {
+    transform: scale(1.2);
+  }
+  .compact .jar {
+    transform: scale(.9);
+  }
+  .compact .jar-zone {
+    height: 200px;
+  }
+  .note-prompt {
+    font-size: 31px;
+  }
+  .line {
+    font-size: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
