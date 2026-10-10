@@ -18,6 +18,13 @@ export const content = {
     sub: 'No right or wrong answers. Just say whatever comes to mind.',
     cta: 'pick a note →',
   },
+  identity: {
+    heading: 'before we start...',
+    sub: 'Biar aku tahu siapa yang lagi ninggalin little pieces of memories ini.',
+    namePlaceholder: 'your name (optional)',
+    anonLabel: 'stay anonymous',
+    cta: "let's start →",
+  },
   question: {
     cta: 'drop it in the jar →',
     reactions: ['hehe', 'ooh', 'okay okay', 'aww'],

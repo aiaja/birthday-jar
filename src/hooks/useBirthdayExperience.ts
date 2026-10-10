@@ -36,6 +36,7 @@ export type ExperienceAction =
   | { type: 'WELCOME_LINE'; payload: number }
   | { type: 'WELCOME_NEXT' }
   | { type: 'INTRO_NEXT' }
+  | { type: 'IDENTITY_NEXT' }
   | { type: 'SET_INPUT_TEXT'; payload: string }
   | { type: 'SET_VISITOR_NAME'; payload: string }
   | { type: 'SET_ANONYMOUS'; payload: boolean }
@@ -100,6 +101,18 @@ export function experienceReducer(
       if (state.phase.name !== 'intro') return state;
       return {
         ...state,
+        phase: { name: 'identity' },
+        characterState: 'thinking',
+        bubbleText: null,
+        isBubbleVisible: false,
+        isSubmitting: false,
+      };
+    }
+
+    case 'IDENTITY_NEXT': {
+      if (state.phase.name !== 'identity') return state;
+      return {
+        ...state,
         phase: { name: 'question', index: 0, status: 'idle' },
         characterState: 'thinking',
         bubbleText: null,
@@ -123,9 +136,15 @@ export function experienceReducer(
     }
 
     case 'SET_VISITOR_NAME': {
+      const name = action.payload;
+      let nextCharState = state.characterState;
+      if (state.phase.name === 'identity') {
+        nextCharState = name.trim().length > 0 ? 'writing' : 'thinking';
+      }
       return {
         ...state,
-        visitorName: action.payload,
+        visitorName: name,
+        characterState: nextCharState,
       };
     }
 
@@ -220,8 +239,6 @@ export function experienceReducer(
         bubbleText: content.finalWish.bubble,
         isBubbleVisible: true,
         inputText: '',
-        visitorName: '',
-        isAnonymous: false,
         isSubmitting: false,
       };
     }
@@ -361,6 +378,10 @@ export function useBirthdayExperience() {
     dispatch({ type: 'INTRO_NEXT' });
   }, []);
 
+  const handleIdentityNext = useCallback(() => {
+    dispatch({ type: 'IDENTITY_NEXT' });
+  }, []);
+
   const handleTextChange = useCallback((text: string) => {
     dispatch({ type: 'SET_INPUT_TEXT', payload: text });
   }, []);
@@ -418,6 +439,7 @@ export function useBirthdayExperience() {
     // Handlers
     handleWelcomeNext,
     handleIntroNext,
+    handleIdentityNext,
     handleTextChange,
     handleNameChange,
     handleAnonymousChange,

@@ -36,6 +36,7 @@ export const BirthdayExperience: React.FC<BirthdayExperienceProps> = ({
     isCharacterEntered,
     handleWelcomeNext,
     handleIntroNext,
+    handleIdentityNext,
     handleTextChange,
     handleNameChange,
     handleAnonymousChange,
@@ -46,7 +47,10 @@ export const BirthdayExperience: React.FC<BirthdayExperienceProps> = ({
     handleRestart,
   } = useBirthdayExperience();
 
-  const isFormPhase = phase.name === 'question' || phase.name === 'finalWish';
+  const isFormPhase =
+    phase.name === 'identity' ||
+    phase.name === 'question' ||
+    phase.name === 'finalWish';
 
   const renderPanelContent = () => {
     switch (phase.name) {
@@ -89,6 +93,40 @@ export const BirthdayExperience: React.FC<BirthdayExperienceProps> = ({
               onClick={handleIntroNext}
             >
               {content.intro.cta}
+            </CtaButton>
+          </>
+        );
+
+      case 'identity':
+        return (
+          <>
+            <article className="note c-yellow">
+              <span className="tape" aria-hidden="true" />
+              <p className="note-prompt">{content.identity.heading}</p>
+              <p className="note-sub">{content.identity.sub}</p>
+              <div className="extras">
+                <input
+                  type="text"
+                  placeholder={content.identity.namePlaceholder}
+                  maxLength={40}
+                  aria-label="Your name (optional)"
+                  value={visitorName}
+                  onChange={(e) => handleNameChange(e.target.value)}
+                  disabled={isAnonymous}
+                  autoFocus
+                />
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={isAnonymous}
+                    onChange={(e) => handleAnonymousChange(e.target.checked)}
+                  />
+                  {content.identity.anonLabel}
+                </label>
+              </div>
+            </article>
+            <CtaButton type="submit" onClick={handleIdentityNext}>
+              {content.identity.cta}
             </CtaButton>
           </>
         );
@@ -185,7 +223,6 @@ export const BirthdayExperience: React.FC<BirthdayExperienceProps> = ({
               color="accent"
               prompt={content.finalWish.prompt}
               placeholder={content.finalWish.placeholder}
-              extras={true}
               value={inputText}
               onChange={(e) => handleTextChange(e.target.value)}
               onKeyDown={(e) => {
@@ -196,12 +233,6 @@ export const BirthdayExperience: React.FC<BirthdayExperienceProps> = ({
                   }
                 }
               }}
-              nameValue={visitorName}
-              onNameChange={(e) => handleNameChange(e.target.value)}
-              isAnonymous={isAnonymous}
-              onAnonymousChange={(e) => handleAnonymousChange(e.target.checked)}
-              namePlaceholder={content.finalWish.namePlaceholder}
-              anonymousLabel={content.finalWish.anonLabel}
               disabled={isSubmitting}
               autoFocus
             />
@@ -237,18 +268,20 @@ export const BirthdayExperience: React.FC<BirthdayExperienceProps> = ({
       id="app"
       className={`app ${isJarVisible ? 'jar-on' : ''} ${isJarCompact ? 'compact' : ''} ${className}`.trim()}
     >
-      <header className="top">
-        <Character state={characterState} isEntered={isCharacterEntered} />
-        <SpeechBubble text={bubbleText ?? ''} isVisible={isBubbleVisible} />
-      </header>
+      <div className="stage-left">
+        <header className="top">
+          <Character state={characterState} isEntered={isCharacterEntered} />
+          <SpeechBubble text={bubbleText ?? ''} isVisible={isBubbleVisible} />
+        </header>
 
-      <BirthdayJar
-        notes={jarNotes}
-        isOpen={isJarOpen}
-        isCompleted={isJarCompleted}
-        isCompact={isJarCompact}
-        isWobbling={isJarWobbling}
-      />
+        <BirthdayJar
+          notes={jarNotes}
+          isOpen={isJarOpen}
+          isCompleted={isJarCompleted}
+          isCompact={isJarCompact}
+          isWobbling={isJarWobbling}
+        />
+      </div>
 
       <ExperiencePanel
         asForm={isFormPhase}
@@ -256,7 +289,9 @@ export const BirthdayExperience: React.FC<BirthdayExperienceProps> = ({
           isFormPhase
             ? (e) => {
                 e.preventDefault();
-                if (phase.name === 'question') {
+                if (phase.name === 'identity') {
+                  handleIdentityNext();
+                } else if (phase.name === 'question') {
                   handleQuestionSubmit();
                 } else if (phase.name === 'finalWish') {
                   handleFinalWishSubmit();

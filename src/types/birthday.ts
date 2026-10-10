@@ -71,6 +71,13 @@ export interface BirthdayContent {
     sub: string;
     cta: string;
   };
+  identity: {
+    heading: string;
+    sub: string;
+    namePlaceholder: string;
+    anonLabel: string;
+    cta: string;
+  };
   question: {
     cta: string;
     reactions: readonly string[];
@@ -102,6 +109,7 @@ export interface BirthdayContent {
 export type ExperiencePhase =
   | { name: 'welcome'; lineIndex: number }
   | { name: 'intro' }
+  | { name: 'identity' }
   | {
       name: 'question';
       index: number;
